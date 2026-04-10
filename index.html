@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="description" content="Ephemeral retro receipt-style Nostr client — write notes (CALL) and curate feeds (LOG)" />
+  <meta name="theme-color" content="#f5f0e8" media="(prefers-color-scheme: light)" />
+  <meta name="theme-color" content="#1a1a18"  media="(prefers-color-scheme: dark)" />
+
+  <!-- Content Security Policy -->
+  <meta http-equiv="Content-Security-Policy"
+        content="default-src 'self';
+                 script-src 'self' https://esm.sh;
+                 connect-src 'self' wss: https://esm.sh https://fonts.googleapis.com https://fonts.gstatic.com;
+                 style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
+                 font-src https://fonts.gstatic.com;
+                 img-src 'self' data:;
+                 object-src 'none';
+                 base-uri 'self';" />
+
+  <!-- PWA -->
+  <link rel="manifest" href="manifest.json" />
+  <link rel="apple-touch-icon" href="icons/icon-192.png" />
+
+  <!-- Styles -->
+  <link rel="stylesheet" href="css/style.css" />
+
+  <title>CALL.LOG</title>
+</head>
+<body>
+  <!-- Background watermark -->
+  <div class="watermark" aria-hidden="true">CALL.LOG</div>
+
+  <!-- ════════════════════════════════════════
+       LANDING PAGE
+       ════════════════════════════════════════ -->
+  <section id="landing" class="view active" aria-label="Landing">
+    <div class="receipt">
+      <div class="receipt-header">
+        <div class="receipt-title">* * * NOSTR CLIENT * * *</div>
+        <hr class="receipt-hr" />
+      </div>
+
+      <!-- CALL.LOG Logo -->
+      <div class="logo-wrap" aria-label="CALL.LOG — click CALL to compose notes, click LOG to curate feed">
+        <div class="logo" role="group">
+          <span id="logo-call"
+                class="logo-call"
+                role="button"
+                tabindex="0"
+                aria-label="CALL — compose and publish notes">CALL</span>
+          <span class="logo-dot">.</span>
+          <span id="logo-log"
+                class="logo-log"
+                role="button"
+                tabindex="0"
+                aria-label="LOG — curate feed from npubs">LOG</span>
+        </div>
+        <div class="logo-tagline">ephemeral · nostr · receipt</div>
+      </div>
+
+      <div class="receipt-sep">- - - - - - - - - - - - - -</div>
+
+      <!-- Auth Section -->
+      <div id="auth-section">
+        <!-- NIP-07 Extension -->
+        <button id="btn-nip07" class="btn-primary btn-full" style="display:none;margin-bottom:10px;">
+          CONNECT EXTENSION
+        </button>
+
+        <!-- nsec warning -->
+        <div id="nsec-warning" class="auth-warning" role="alert">
+          <strong>⚠ SECURITY NOTICE</strong><br />
+          No NIP-07 extension detected. You may enter your nsec below.<br />
+          Your key is held <em>only in memory</em> and is never stored to
+          disk, localStorage, or cookies. It is cleared when you close
+          or refresh this tab.
+        </div>
+
+        <div class="auth-label" style="margin-top:10px;">NSEC OR HEX PRIVATE KEY</div>
+        <div class="auth-row">
+          <input id="nsec-input"
+                 type="password"
+                 placeholder="nsec1… or 64-char hex"
+                 autocomplete="off"
+                 autocorrect="off"
+                 autocapitalize="off"
+                 spellcheck="false"
+                 aria-label="Private key input" />
+          <button id="btn-nsec-login" class="btn-primary">LOGIN</button>
+        </div>
+      </div>
+
+      <!-- Logged-in bar -->
+      <div id="logged-in-bar" class="status-bar" style="display:none;" aria-live="polite">
+        <span>
+          <span class="status-dot" aria-hidden="true"></span>
+          <span id="npub-display" class="status-npub"></span>
+        </span>
+        <button id="btn-logout" class="btn-danger" style="padding:4px 10px;min-height:0;font-size:0.72rem;">
+          DISCONNECT
+        </button>
+      </div>
+
+      <div class="receipt-sep" style="margin-top:12px;">= = = = = = = = = = = = = =</div>
+
+      <!-- Navigation hints -->
+      <div style="text-align:center;font-size:0.72rem;color:var(--ink-faint);padding:12px 0 4px;letter-spacing:0.1em;">
+        CLICK <strong>CALL</strong> TO WRITE · CLICK <strong>LOG</strong> TO READ
+      </div>
+    </div>
+  </section>
+
+  <!-- ════════════════════════════════════════
+       CALL VIEW — Compose & Publish Notes
+       ════════════════════════════════════════ -->
+  <section id="view-call" class="view" aria-label="CALL — Compose Notes">
+    <div class="receipt">
+      <div class="view-header">
+        <span class="view-title amber">✦ CALL</span>
+        <button id="btn-back-call" class="btn-secondary" style="padding:4px 10px;min-height:0;font-size:0.72rem;">
+          ← BACK
+        </button>
+      </div>
+
+      <div class="receipt-sep">- - - - - - - - - - - - - -</div>
+
+      <!-- Auth status (compact) -->
+      <div id="logged-in-bar-call" class="status-bar" aria-live="polite" style="margin-bottom:8px;">
+        <span>
+          <span class="status-dot" aria-hidden="true"></span>
+          <span class="status-npub" id="npub-display-call"></span>
+        </span>
+        <button class="btn-danger" style="padding:3px 8px;min-height:0;font-size:0.68rem;" id="btn-logout-call">
+          DISCONNECT
+        </button>
+      </div>
+
+      <div class="receipt-sep">= = = = = = = = = = = = = =</div>
+
+      <!-- Compose -->
+      <div class="receipt-title" style="margin:12px 0 6px;font-size:0.85rem;">NEW NOTE</div>
+      <div class="compose-area">
+        <textarea id="note-input"
+                  placeholder="What's on the wire…"
+                  maxlength="280"
+                  aria-label="Note content"></textarea>
+        <div id="char-count" class="char-count" aria-live="polite">0/280</div>
+      </div>
+      <button id="btn-publish" class="btn-primary btn-full" style="margin-bottom:12px;">
+        PRINT
+      </button>
+
+      <div class="receipt-sep">- - - - - - - - - - - - - -</div>
+
+      <!-- Own notes feed -->
+      <div class="receipt-title" style="margin:12px 0 6px;font-size:0.85rem;">RECENT PRINTS</div>
+      <ul id="own-feed-list" class="feed-list" aria-label="Your recent notes" aria-live="polite"></ul>
+
+      <div class="receipt-sep">= = = = = = = = = = = = = =</div>
+
+      <!-- Relay settings (collapsible) -->
+      <div style="text-align:right;margin:8px 0 4px;">
+        <button class="collapse-toggle" data-target="relay-section-call">▼ RELAYS</button>
+      </div>
+      <div id="relay-section-call" class="collapsible">
+        <div id="relay-list-call" aria-label="Connected relays"></div>
+        <div class="auth-row" style="margin-top:8px;">
+          <input id="relay-input-call"
+                 type="text"
+                 placeholder="wss://relay.example.com"
+                 autocomplete="off"
+                 aria-label="Add relay URL" />
+          <button id="btn-add-relay-call" class="btn-secondary">ADD</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ════════════════════════════════════════
+       LOG VIEW — Feed Curation
+       ════════════════════════════════════════ -->
+  <section id="view-log" class="view" aria-label="LOG — Curate Feed">
+    <div class="receipt">
+      <div class="view-header">
+        <span class="view-title green">✦ LOG</span>
+        <button id="btn-back-log" class="btn-secondary" style="padding:4px 10px;min-height:0;font-size:0.72rem;">
+          ← BACK
+        </button>
+      </div>
+
+      <div class="receipt-sep">- - - - - - - - - - - - - -</div>
+
+      <!-- Auth status (compact) -->
+      <div class="status-bar" style="margin-bottom:8px;" aria-live="polite">
+        <span>
+          <span class="status-dot" aria-hidden="true"></span>
+          <span class="status-npub" id="npub-display-log"></span>
+        </span>
+        <button class="btn-danger" style="padding:3px 8px;min-height:0;font-size:0.68rem;" id="btn-logout-log">
+          DISCONNECT
+        </button>
+      </div>
+
+      <div class="receipt-sep">= = = = = = = = = = = = = =</div>
+
+      <!-- Follow npubs -->
+      <div class="receipt-title" style="margin:12px 0 6px;font-size:0.85rem;">CURATE FEED</div>
+      <div class="follow-row">
+        <input id="follow-input"
+               type="text"
+               placeholder="npub1… or nprofile1…"
+               autocomplete="off"
+               autocorrect="off"
+               autocapitalize="off"
+               spellcheck="false"
+               aria-label="Add npub to follow" />
+        <button id="btn-add-follow" class="btn-primary">ADD</button>
+      </div>
+
+      <!-- Follow chips -->
+      <div id="follow-list" class="follow-list" aria-label="Curated npubs" aria-live="polite"></div>
+
+      <!-- Save NIP-51 -->
+      <button id="btn-save-list" class="btn-secondary btn-full" style="margin:8px 0 4px;">
+        SAVE LIST
+      </button>
+      <div style="font-size:0.68rem;color:var(--ink-faint);text-align:center;margin-bottom:8px;">
+        Saves as NIP-51 list on Nostr (requires sign-in)
+      </div>
+
+      <div class="receipt-sep">- - - - - - - - - - - - - -</div>
+
+      <!-- Curated feed -->
+      <div class="receipt-title" style="margin:12px 0 6px;font-size:0.85rem;">FEED</div>
+      <ul id="curated-feed-list" class="feed-list" aria-label="Curated notes feed" aria-live="polite"></ul>
+
+      <div class="receipt-sep">= = = = = = = = = = = = = =</div>
+
+      <!-- Relay settings (collapsible) -->
+      <div style="text-align:right;margin:8px 0 4px;">
+        <button class="collapse-toggle" data-target="relay-section-log">▼ RELAYS</button>
+      </div>
+      <div id="relay-section-log" class="collapsible">
+        <div id="relay-list-log" aria-label="Connected relays"></div>
+        <div class="auth-row" style="margin-top:8px;">
+          <input id="relay-input-log"
+                 type="text"
+                 placeholder="wss://relay.example.com"
+                 autocomplete="off"
+                 aria-label="Add relay URL" />
+          <button id="btn-add-relay-log" class="btn-secondary">ADD</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Toast container (created dynamically by ui.js) -->
+
+  <!-- App scripts — ES module -->
+  <script type="module" src="js/app.js"></script>
+</body>
+</html>
