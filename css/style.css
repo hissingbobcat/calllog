@@ -1,0 +1,680 @@
+/* ============================================================
+   CALL.LOG — Retro Receipt / Thermal Printer Stylesheet
+   Mobile-first, monospace, ephemeral Nostr client
+   ============================================================ */
+
+/* ── Fonts ── */
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;700&display=swap');
+
+/* ── Reset & Base ── */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+:root {
+  --paper:        #f5f0e8;
+  --paper-dark:   #e8e0d0;
+  --ink:          #2d2d2d;
+  --ink-faint:    #7a7060;
+  --amber:        #ff9900;
+  --amber-glow:   rgba(255, 153, 0, 0.35);
+  --green:        #33ff33;
+  --green-glow:   rgba(51, 255, 51, 0.30);
+  --receipt-w:    340px;
+  --font:         'IBM Plex Mono', 'Courier New', Courier, monospace;
+  --transition:   0.2s ease;
+}
+
+html {
+  font-size: 14px;
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  font-family: var(--font);
+  background: var(--paper);
+  color: var(--ink);
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 0 0 env(safe-area-inset-bottom, 0);
+  /* subtle paper noise */
+  background-image:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+}
+
+/* ── Receipt Container ── */
+.receipt {
+  width: 100%;
+  max-width: var(--receipt-w);
+  background: var(--paper);
+  position: relative;
+  padding: 0 16px 24px;
+}
+
+/* Torn paper top edge */
+.receipt::before {
+  content: '';
+  display: block;
+  height: 16px;
+  background:
+    radial-gradient(circle at 8px 0, var(--paper) 6px, transparent 6px),
+    radial-gradient(circle at 24px 0, var(--paper) 6px, transparent 6px),
+    radial-gradient(circle at 40px 0, var(--paper) 6px, transparent 6px),
+    radial-gradient(circle at 56px 0, var(--paper) 6px, transparent 6px),
+    radial-gradient(circle at 72px 0, var(--paper) 6px, transparent 6px),
+    radial-gradient(circle at 88px 0, var(--paper) 6px, transparent 6px),
+    radial-gradient(circle at 104px 0, var(--paper) 6px, transparent 6px),
+    radial-gradient(circle at 120px 0, var(--paper) 6px, transparent 6px),
+    radial-gradient(circle at 136px 0, var(--paper) 6px, transparent 6px),
+    radial-gradient(circle at 152px 0, var(--paper) 6px, transparent 6px),
+    radial-gradient(circle at 168px 0, var(--paper) 6px, transparent 6px),
+    radial-gradient(circle at 184px 0, var(--paper) 6px, transparent 6px),
+    radial-gradient(circle at 200px 0, var(--paper) 6px, transparent 6px),
+    radial-gradient(circle at 216px 0, var(--paper) 6px, transparent 6px),
+    radial-gradient(circle at 232px 0, var(--paper) 6px, transparent 6px),
+    radial-gradient(circle at 248px 0, var(--paper) 6px, transparent 6px),
+    radial-gradient(circle at 264px 0, var(--paper) 6px, transparent 6px),
+    radial-gradient(circle at 280px 0, var(--paper) 6px, transparent 6px),
+    radial-gradient(circle at 296px 0, var(--paper) 6px, transparent 6px),
+    radial-gradient(circle at 312px 0, var(--paper) 6px, transparent 6px),
+    radial-gradient(circle at 328px 0, var(--paper) 6px, transparent 6px),
+    radial-gradient(circle at 344px 0, var(--paper) 6px, transparent 6px);
+  background-color: var(--paper-dark);
+  background-repeat: no-repeat;
+  background-size: 352px 16px;
+  margin: 0 -16px;
+}
+
+/* Torn paper bottom edge */
+.receipt::after {
+  content: '';
+  display: block;
+  height: 16px;
+  background:
+    radial-gradient(circle at 8px 16px, var(--paper) 6px, transparent 6px),
+    radial-gradient(circle at 24px 16px, var(--paper) 6px, transparent 6px),
+    radial-gradient(circle at 40px 16px, var(--paper) 6px, transparent 6px),
+    radial-gradient(circle at 56px 16px, var(--paper) 6px, transparent 6px),
+    radial-gradient(circle at 72px 16px, var(--paper) 6px, transparent 6px),
+    radial-gradient(circle at 88px 16px, var(--paper) 6px, transparent 6px),
+    radial-gradient(circle at 104px 16px, var(--paper) 6px, transparent 6px),
+    radial-gradient(circle at 120px 16px, var(--paper) 6px, transparent 6px),
+    radial-gradient(circle at 136px 16px, var(--paper) 6px, transparent 6px),
+    radial-gradient(circle at 152px 16px, var(--paper) 6px, transparent 6px),
+    radial-gradient(circle at 168px 16px, var(--paper) 6px, transparent 6px),
+    radial-gradient(circle at 184px 16px, var(--paper) 6px, transparent 6px),
+    radial-gradient(circle at 200px 16px, var(--paper) 6px, transparent 6px),
+    radial-gradient(circle at 216px 16px, var(--paper) 6px, transparent 6px),
+    radial-gradient(circle at 232px 16px, var(--paper) 6px, transparent 6px),
+    radial-gradient(circle at 248px 16px, var(--paper) 6px, transparent 6px),
+    radial-gradient(circle at 264px 16px, var(--paper) 6px, transparent 6px),
+    radial-gradient(circle at 280px 16px, var(--paper) 6px, transparent 6px),
+    radial-gradient(circle at 296px 16px, var(--paper) 6px, transparent 6px),
+    radial-gradient(circle at 312px 16px, var(--paper) 6px, transparent 6px),
+    radial-gradient(circle at 328px 16px, var(--paper) 6px, transparent 6px),
+    radial-gradient(circle at 344px 16px, var(--paper) 6px, transparent 6px);
+  background-color: var(--paper-dark);
+  background-repeat: no-repeat;
+  background-size: 352px 16px;
+  margin: 0 -16px;
+}
+
+/* ── Typography ── */
+.receipt-header {
+  text-align: center;
+  padding: 20px 0 8px;
+  letter-spacing: 0.08em;
+}
+
+.receipt-title {
+  font-size: 1.1rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+  color: var(--ink-faint);
+}
+
+.receipt-hr {
+  border: none;
+  border-top: 1px dashed var(--ink-faint);
+  margin: 8px 0;
+  opacity: 0.5;
+}
+
+.receipt-sep {
+  text-align: center;
+  color: var(--ink-faint);
+  font-size: 0.75rem;
+  letter-spacing: 0.1em;
+  margin: 6px 0;
+  opacity: 0.6;
+  user-select: none;
+}
+
+/* ── CALL.LOG Logo ── */
+#landing {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100dvh;
+  padding: 24px 16px;
+}
+
+.logo-wrap {
+  margin: 32px 0 48px;
+  text-align: center;
+}
+
+.logo {
+  font-size: clamp(2.8rem, 12vw, 4.5rem);
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  line-height: 1;
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  gap: 0;
+  user-select: none;
+}
+
+.logo-call,
+.logo-log {
+  cursor: pointer;
+  padding: 4px 6px;
+  border-radius: 3px;
+  transition: color var(--transition), text-shadow var(--transition), background var(--transition);
+  display: inline-block;
+}
+
+.logo-call:hover,
+.logo-call:focus-visible {
+  color: var(--amber);
+  text-shadow:
+    0 0 8px var(--amber-glow),
+    0 0 20px var(--amber-glow);
+  background: rgba(255, 153, 0, 0.06);
+  outline: none;
+}
+
+.logo-log:hover,
+.logo-log:focus-visible {
+  color: var(--green);
+  text-shadow:
+    0 0 8px var(--green-glow),
+    0 0 20px var(--green-glow);
+  background: rgba(51, 255, 51, 0.06);
+  outline: none;
+}
+
+.logo-dot {
+  color: var(--ink-faint);
+  font-size: 0.8em;
+  margin: 0 1px;
+}
+
+.logo-tagline {
+  font-size: 0.75rem;
+  color: var(--ink-faint);
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  margin-top: 12px;
+}
+
+/* ── Auth Panel ── */
+.auth-panel {
+  width: 100%;
+  padding: 12px 0;
+}
+
+.auth-warning {
+  background: rgba(255, 153, 0, 0.12);
+  border: 1px dashed var(--amber);
+  border-radius: 2px;
+  padding: 10px 12px;
+  font-size: 0.78rem;
+  color: var(--ink);
+  line-height: 1.5;
+  margin: 8px 0;
+}
+
+.auth-warning strong {
+  color: var(--amber);
+}
+
+.auth-row {
+  display: flex;
+  gap: 6px;
+  align-items: stretch;
+  margin: 8px 0;
+}
+
+.auth-label {
+  font-size: 0.75rem;
+  color: var(--ink-faint);
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  margin-bottom: 4px;
+}
+
+/* ── Inputs ── */
+input[type="text"],
+input[type="password"],
+textarea {
+  font-family: var(--font);
+  font-size: 0.9rem;
+  background: rgba(45, 45, 45, 0.04);
+  border: 1px solid rgba(45, 45, 45, 0.25);
+  border-radius: 2px;
+  color: var(--ink);
+  padding: 10px 12px;
+  width: 100%;
+  outline: none;
+  transition: border-color var(--transition), box-shadow var(--transition);
+  -webkit-appearance: none;
+}
+
+input[type="text"]:focus,
+input[type="password"]:focus,
+textarea:focus {
+  border-color: var(--amber);
+  box-shadow: 0 0 0 2px var(--amber-glow);
+}
+
+textarea {
+  resize: vertical;
+  min-height: 90px;
+  line-height: 1.5;
+}
+
+/* ── Buttons ── */
+button {
+  font-family: var(--font);
+  font-size: 0.85rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  cursor: pointer;
+  border-radius: 2px;
+  border: none;
+  padding: 10px 18px;
+  min-height: 44px;
+  transition: background var(--transition), box-shadow var(--transition), color var(--transition);
+  -webkit-appearance: none;
+}
+
+.btn-primary {
+  background: var(--ink);
+  color: var(--paper);
+}
+
+.btn-primary:hover {
+  background: var(--amber);
+  color: var(--ink);
+  box-shadow: 0 0 12px var(--amber-glow);
+}
+
+.btn-secondary {
+  background: transparent;
+  color: var(--ink-faint);
+  border: 1px dashed var(--ink-faint);
+}
+
+.btn-secondary:hover {
+  color: var(--amber);
+  border-color: var(--amber);
+}
+
+.btn-danger {
+  background: transparent;
+  color: #c0392b;
+  border: 1px dashed #c0392b;
+}
+
+.btn-danger:hover {
+  background: rgba(192, 57, 43, 0.1);
+}
+
+.btn-full { width: 100%; }
+
+/* ── Status Bar ── */
+.status-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 6px 0;
+  font-size: 0.72rem;
+  color: var(--ink-faint);
+  letter-spacing: 0.06em;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.status-npub {
+  font-size: 0.72rem;
+  color: var(--ink-faint);
+  word-break: break-all;
+}
+
+.status-dot {
+  display: inline-block;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--green);
+  box-shadow: 0 0 6px var(--green-glow);
+  margin-right: 5px;
+  vertical-align: middle;
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.4; }
+}
+
+/* ── Views ── */
+.view {
+  display: none;
+  width: 100%;
+  animation: fadeIn 0.25s ease;
+}
+
+.view.active {
+  display: block;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ── View Header ── */
+.view-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 0 6px;
+}
+
+.view-title {
+  font-size: 1rem;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+}
+
+.view-title.amber { color: var(--amber); }
+.view-title.green { color: var(--green); }
+
+/* ── Receipt Feed ── */
+.feed-list {
+  list-style: none;
+  padding: 0;
+  margin: 8px 0;
+}
+
+.feed-item {
+  padding: 10px 0;
+  border-bottom: 1px dashed rgba(45, 45, 45, 0.2);
+  animation: slideIn 0.3s ease;
+}
+
+@keyframes slideIn {
+  from { opacity: 0; transform: translateX(-6px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+.feed-item:last-child {
+  border-bottom: none;
+}
+
+.feed-meta {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.7rem;
+  color: var(--ink-faint);
+  margin-bottom: 4px;
+  letter-spacing: 0.05em;
+}
+
+.feed-npub {
+  font-size: 0.7rem;
+  color: var(--ink-faint);
+}
+
+.feed-time {
+  font-size: 0.7rem;
+  color: var(--ink-faint);
+  white-space: nowrap;
+}
+
+.feed-content {
+  font-size: 0.88rem;
+  line-height: 1.55;
+  word-break: break-word;
+  white-space: pre-wrap;
+}
+
+/* ── Compose ── */
+.compose-area {
+  margin: 10px 0;
+}
+
+.char-count {
+  text-align: right;
+  font-size: 0.68rem;
+  color: var(--ink-faint);
+  margin-top: 4px;
+}
+
+.char-count.warn { color: var(--amber); }
+
+/* ── Relay Tag ── */
+.relay-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 5px 0;
+  font-size: 0.72rem;
+  color: var(--ink-faint);
+  border-bottom: 1px dotted rgba(45,45,45,0.15);
+}
+
+.relay-status {
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  margin-right: 6px;
+  vertical-align: middle;
+}
+.relay-status.connected    { background: var(--green); }
+.relay-status.connecting   { background: var(--amber); }
+.relay-status.disconnected { background: #c0392b; }
+
+/* ── Follow input row ── */
+.follow-row {
+  display: flex;
+  gap: 6px;
+  margin: 8px 0;
+}
+
+.follow-row input {
+  flex: 1;
+}
+
+/* ── Follow chip ── */
+.follow-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 8px 0;
+}
+
+.follow-chip {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(45, 45, 45, 0.07);
+  border-radius: 2px;
+  padding: 4px 8px;
+  font-size: 0.7rem;
+  color: var(--ink);
+  border: 1px solid rgba(45, 45, 45, 0.15);
+}
+
+.follow-chip button {
+  background: none;
+  border: none;
+  padding: 0;
+  min-height: 0;
+  font-size: 0.75rem;
+  color: var(--ink-faint);
+  cursor: pointer;
+  line-height: 1;
+  letter-spacing: normal;
+  text-transform: none;
+}
+
+.follow-chip button:hover { color: #c0392b; }
+
+/* ── Notification Toast ── */
+.toast-wrap {
+  position: fixed;
+  bottom: calc(24px + env(safe-area-inset-bottom, 0px));
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  pointer-events: none;
+}
+
+.toast {
+  font-family: var(--font);
+  font-size: 0.8rem;
+  padding: 8px 16px;
+  border-radius: 2px;
+  background: var(--ink);
+  color: var(--paper);
+  letter-spacing: 0.08em;
+  animation: toastIn 0.25s ease, toastOut 0.35s ease 2.5s forwards;
+  white-space: nowrap;
+  max-width: 90vw;
+  text-align: center;
+}
+
+.toast.success { border-left: 3px solid var(--green); }
+.toast.error   { border-left: 3px solid #c0392b; }
+.toast.info    { border-left: 3px solid var(--amber); }
+
+@keyframes toastIn {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes toastOut {
+  from { opacity: 1; transform: translateY(0); }
+  to   { opacity: 0; transform: translateY(12px); }
+}
+
+/* ── Typewriter ── */
+.typewriter::after {
+  content: '█';
+  animation: blink 0.9s step-end infinite;
+  font-weight: 400;
+  color: var(--amber);
+  margin-left: 1px;
+}
+
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0; }
+}
+
+/* ── Relay Settings Toggle ── */
+.collapse-toggle {
+  background: none;
+  border: none;
+  padding: 0;
+  font-size: 0.72rem;
+  min-height: 0;
+  color: var(--ink-faint);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  cursor: pointer;
+  font-weight: 700;
+  font-family: var(--font);
+}
+
+.collapse-toggle:hover { color: var(--amber); }
+
+.collapsible { display: none; }
+.collapsible.open { display: block; }
+
+/* ── Watermark ── */
+.watermark {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) rotate(-30deg);
+  font-size: clamp(3rem, 15vw, 7rem);
+  font-weight: 700;
+  letter-spacing: 0.2em;
+  color: rgba(45, 45, 45, 0.03);
+  pointer-events: none;
+  user-select: none;
+  white-space: nowrap;
+  z-index: 0;
+}
+
+/* ── Scrollbar ── */
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--ink-faint); border-radius: 2px; }
+
+/* ── Dark Mode (Carbon Copy) ── */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --paper:        #1a1a18;
+    --paper-dark:   #111110;
+    --ink:          #d4c9b0;
+    --ink-faint:    #776e5e;
+  }
+
+  body {
+    background-image:
+      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23n)' opacity='0.06'/%3E%3C/svg%3E");
+  }
+
+  input[type="text"],
+  input[type="password"],
+  textarea {
+    background: rgba(212, 201, 176, 0.05);
+    border-color: rgba(212, 201, 176, 0.2);
+    color: var(--ink);
+  }
+}
+
+/* ── Responsive / Desktop ── */
+@media (min-width: 520px) {
+  .receipt {
+    box-shadow:
+      0 2px 8px rgba(0,0,0,0.12),
+      0 0 0 1px rgba(0,0,0,0.06);
+    margin: 48px auto;
+  }
+
+  #landing {
+    min-height: auto;
+    padding-top: 0;
+    padding-bottom: 0;
+  }
+}
