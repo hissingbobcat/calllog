@@ -7,13 +7,21 @@
  *  - Login / logout, key material clearing
  */
 
-import * as nostrTools from 'https://esm.sh/nostr-tools@2.7.2';
-const { nip19 } = nostrTools;
+import { getPublicKey, finalizeEvent, nip19 } from 'https://esm.sh/nostr-tools@2.7.2';
+
+/* Inline helper — avoids importing @noble/hashes separately */
+function hexToBytes(hex) {
+  const bytes = new Uint8Array(hex.length / 2);
+  for (let i = 0; i < hex.length; i += 2) {
+    bytes[i / 2] = parseInt(hex.slice(i, i + 2), 16);
+  }
+  return bytes;
+}
 
 /* Private, module-scoped — never exported directly */
-let _privkey   = null;  /* hex private key, in-memory only */
-let _pubkey    = null;  /* hex public key */
-let _authMode  = null;  /* 'nip07' | 'nsec' */
+let _privkeyBytes = null;  /* Uint8Array private key, in-memory only */
+let _pubkey       = null;  /* hex public key */
+let _authMode     = null;  /* 'nip07' | 'nsec' */
 let _onChangeListeners = [];
 
 export function onAuthChange(fn) {
@@ -43,8 +51,8 @@ export async function loginWithNip07() {
   try {
     const pub = await window.nostr.getPublicKey();
     if (!pub) return false;
-    _pubkey  = pub;
-    _privkey = null;
+    _pubkey       = pub;
+    _privkeyBytes = null;
     _authMode = 'nip07';
     _notify();
     return true;
@@ -62,21 +70,22 @@ export async function loginWithNip07() {
  */
 export function loginWithNsec(nsecOrHex) {
   try {
-    let hexKey;
+    let keyBytes;
     const trimmed = nsecOrHex.trim();
     if (trimmed.startsWith('nsec1')) {
       const decoded = nip19.decode(trimmed);
       if (decoded.type !== 'nsec') return { ok: false, error: 'Invalid nsec' };
-      hexKey = decoded.data;
+      /* nip19.decode returns the raw Uint8Array for nsec */
+      keyBytes = decoded.data;
     } else if (/^[0-9a-f]{64}$/i.test(trimmed)) {
-      hexKey = trimmed.toLowerCase();
+      keyBytes = hexToBytes(trimmed.toLowerCase());
     } else {
       return { ok: false, error: 'Must be nsec1… or 64-char hex' };
     }
 
-    _privkey  = hexKey;
-    _pubkey   = nostrTools.getPublicKey(hexKey);
-    _authMode = 'nsec';
+    _privkeyBytes = keyBytes;
+    _pubkey       = getPublicKey(keyBytes);
+    _authMode     = 'nsec';
     _notify();
     return { ok: true };
   } catch (err) {
@@ -94,8 +103,8 @@ export async function signEvent(eventTemplate) {
   if (_authMode === 'nip07') {
     return await window.nostr.signEvent(eventTemplate);
   }
-  if (_authMode === 'nsec' && _privkey) {
-    return nostrTools.finalizeEvent(eventTemplate, nostrTools.hexToBytes(_privkey));
+  if (_authMode === 'nsec' && _privkeyBytes) {
+    return finalizeEvent(eventTemplate, _privkeyBytes);
   }
   throw new Error('Not authenticated');
 }
@@ -104,9 +113,10 @@ export async function signEvent(eventTemplate) {
  * Clear all key material from memory and fire the change callback.
  */
 export function logout() {
-  _privkey  = null;
-  _pubkey   = null;
-  _authMode = null;
+  if (_privkeyBytes) _privkeyBytes.fill(0);  /* zero out key bytes */
+  _privkeyBytes = null;
+  _pubkey       = null;
+  _authMode     = null;
   _notify();
 }
 

@@ -23,6 +23,9 @@ function ensureToastWrap() {
   return _toastWrap;
 }
 
+/* Duration in ms that matches the CSS toastOut animation (0.35s) */
+const TOAST_FADE_MS = 350;
+
 /**
  * Show a toast notification.
  * @param {string} msg
@@ -38,7 +41,7 @@ export function toast(msg, type = 'info', duration = 3000) {
   setTimeout(() => {
     el.addEventListener('animationend', () => el.remove(), { once: true });
     /* fallback in case animation doesn't fire */
-    setTimeout(() => el.remove(), 400);
+    setTimeout(() => el.remove(), TOAST_FADE_MS);
   }, duration);
 }
 
@@ -98,8 +101,7 @@ export function upsertFeedItem(listEl, event, position = 'prepend') {
 export function showEmptyState(listEl, message) {
   if (listEl.querySelector('.empty-state')) return;
   const li = document.createElement('li');
-  li.className = 'feed-item empty-state';
-  li.style.cssText = 'text-align:center;color:var(--ink-faint);font-size:0.78rem;padding:20px 0;';
+  li.className = 'feed-item feed-loading empty-state';
   li.textContent = message;
   listEl.appendChild(li);
 }
@@ -162,8 +164,7 @@ export function renderRelayList(containerEl, relays, statusMap) {
     left.appendChild(document.createTextNode(url.replace('wss://', '')));
 
     const removeBtn = document.createElement('button');
-    removeBtn.className = 'btn-secondary';
-    removeBtn.style.cssText = 'font-size:0.68rem;min-height:0;padding:2px 6px;';
+    removeBtn.className = 'btn-secondary relay-remove-btn';
     removeBtn.textContent = '✕';
     removeBtn.title = 'Remove relay';
     removeBtn.dataset.relayUrl = url;

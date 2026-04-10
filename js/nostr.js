@@ -8,8 +8,7 @@
  *  - NIP-51 people-list (kind 30000) fetch & publish
  */
 
-import * as nostrTools from 'https://esm.sh/nostr-tools@2.7.2';
-const { SimplePool, nip19, kinds } = nostrTools;
+import { SimplePool, nip19 } from 'https://esm.sh/nostr-tools@2.7.2';
 
 /* ── Default relays ── */
 const DEFAULT_RELAYS = [
@@ -109,7 +108,7 @@ export async function fetchFeed(pubkeys, limit = 30) {
   if (!pubkeys.length) return [];
   const events = await _pool.querySync(
     _relays,
-    [{ kinds: [1], authors: pubkeys, limit }]
+    { kinds: [1], authors: pubkeys, limit }
   );
   return events.sort((a, b) => b.created_at - a.created_at);
 }
@@ -135,12 +134,12 @@ export async function fetchFollowList(pubkey) {
   try {
     const events = await _pool.querySync(
       _relays,
-      [{
+      {
         kinds: [30000],
         authors: [pubkey],
         '#d': ['calllog'],
         limit: 1,
-      }]
+      }
     );
     if (!events.length) return [];
     const latest = events.sort((a, b) => b.created_at - a.created_at)[0];

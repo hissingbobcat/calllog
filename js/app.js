@@ -46,7 +46,8 @@ import {
   typewriter,
 } from './ui.js';
 
-import * as nostrTools from 'https://esm.sh/nostr-tools@2.7.2';
+/* ── Constants ── */
+const NOTE_MAX_LEN = 280;
 
 /* ── DOM refs ── */
 const $ = id => document.getElementById(id);
@@ -69,6 +70,12 @@ const nsecWarning  = $('nsec-warning');
 const loggedInBar  = $('logged-in-bar');
 const npubDisplay  = $('npub-display');
 const logoutBtn    = $('btn-logout');
+
+/* Secondary auth displays in CALL / LOG views */
+const npubDisplayCall = $('npub-display-call');
+const npubDisplayLog  = $('npub-display-log');
+const logoutCallBtn   = $('btn-logout-call');
+const logoutLogBtn    = $('btn-logout-log');
 
 /* CALL view */
 const callNoteInput  = $('note-input');
@@ -113,9 +120,12 @@ function showView(name) {
 function updateAuthUI(state) {
   if (!authSection || !loggedInBar) return;
   if (state.loggedIn) {
+    const display = getNpubDisplay();
     authSection.style.display = 'none';
     loggedInBar.style.display = 'flex';
-    if (npubDisplay) npubDisplay.textContent = getNpubDisplay();
+    if (npubDisplay)     npubDisplay.textContent     = display;
+    if (npubDisplayCall) npubDisplayCall.textContent = display;
+    if (npubDisplayLog)  npubDisplayLog.textContent  = display;
   } else {
     authSection.style.display = 'block';
     loggedInBar.style.display = 'none';
@@ -162,16 +172,17 @@ if (nsecLoginBtn) {
   });
 }
 
-/* ── Logout ── */
-if (logoutBtn) {
-  logoutBtn.addEventListener('click', () => {
-    logout();
-    /* Clear subscriptions */
-    if (_feedSub) { try { _feedSub.close(); } catch (_) {} _feedSub = null; }
-    showView('landing');
-    toast('Signed out. Key material cleared.', 'info');
-  });
+/* ── Logout (primary + secondary) ── */
+function doLogout() {
+  logout();
+  if (_feedSub) { try { _feedSub.close(); } catch (_) {} _feedSub = null; }
+  showView('landing');
+  toast('Signed out. Key material cleared.', 'info');
 }
+
+if (logoutBtn)      logoutBtn.addEventListener('click',      doLogout);
+if (logoutCallBtn)  logoutCallBtn.addEventListener('click',  doLogout);
+if (logoutLogBtn)   logoutLogBtn.addEventListener('click',   doLogout);
 
 /* ── Logo Navigation ── */
 if (logoCall) {
@@ -209,8 +220,7 @@ async function loadOwnNotes(pubkey) {
   if (!ownFeedList) return;
   ownFeedList.innerHTML = '';
   const loadingLi = document.createElement('li');
-  loadingLi.className = 'feed-item';
-  loadingLi.style.cssText = 'text-align:center;color:var(--ink-faint);font-size:0.78rem;padding:16px 0;';
+  loadingLi.className = 'feed-item feed-loading';
   loadingLi.textContent = 'LOADING NOTES…';
   ownFeedList.appendChild(loadingLi);
 
@@ -234,8 +244,8 @@ async function loadOwnNotes(pubkey) {
 if (callNoteInput && callCharCount) {
   callNoteInput.addEventListener('input', () => {
     const len = callNoteInput.value.length;
-    callCharCount.textContent = `${len}/280`;
-    callCharCount.classList.toggle('warn', len > 260);
+    callCharCount.textContent = `${len}/${NOTE_MAX_LEN}`;
+    callCharCount.classList.toggle('warn', len > NOTE_MAX_LEN - 20);
   });
 }
 
@@ -266,7 +276,7 @@ if (publishBtn) {
       if (okRelays.length > 0) {
         toast(`✓ PRINTED TO ${okRelays.length} RELAY${okRelays.length > 1 ? 'S' : ''}`, 'success');
         if (callNoteInput) callNoteInput.value = '';
-        if (callCharCount) callCharCount.textContent = '0/280';
+        if (callCharCount) callCharCount.textContent = `0/${NOTE_MAX_LEN}`;
         /* Prepend to own feed */
         if (ownFeedList) {
           clearEmptyState(ownFeedList);
@@ -359,8 +369,7 @@ async function loadCuratedFeed() {
 
   curatedFeedList.innerHTML = '';
   const loadingLi = document.createElement('li');
-  loadingLi.className = 'feed-item';
-  loadingLi.style.cssText = 'text-align:center;color:var(--ink-faint);font-size:0.78rem;padding:16px 0;';
+  loadingLi.className = 'feed-item feed-loading';
   loadingLi.textContent = 'LOADING FEED…';
   curatedFeedList.appendChild(loadingLi);
 

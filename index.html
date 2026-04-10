@@ -12,7 +12,7 @@
         content="default-src 'self';
                  script-src 'self' https://esm.sh;
                  connect-src 'self' wss: https://esm.sh https://fonts.googleapis.com https://fonts.gstatic.com;
-                 style-src 'self' https://fonts.googleapis.com;
+                 style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
                  font-src https://fonts.gstatic.com;
                  img-src 'self' data:;
                  object-src 'none';
@@ -143,7 +143,7 @@
       <div class="compose-area">
         <textarea id="note-input"
                   placeholder="What's on the wire…"
-                  maxlength="1000"
+                  maxlength="280"
                   aria-label="Note content"></textarea>
         <div id="char-count" class="char-count" aria-live="polite">0/280</div>
       </div>
